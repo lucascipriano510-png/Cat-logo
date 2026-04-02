@@ -125,9 +125,17 @@ export default function Home() {
   };
 
   const handleCheckout = () => {
+    // Build message with cart items
+    const itemsList = cartItems
+      .map(item => `${item.name} (x${item.quantity}) - R$ ${(item.price * item.quantity).toFixed(2)}`)
+      .join('%0A');
+    
+    const message = `Olá! Gostaria de receber os seguintes looks:%0A%0A${itemsList}%0A%0ATotal: R$ ${cartTotal.toFixed(2)}%0A%0A* Vou pagar só o que ficar`;
+    const whatsappUrl = `https://wa.me/5534984148067?text=${message}`;
+    
     setShowSuccess(true);
     setTimeout(() => {
-      window.location.href = WHATSAPP_URL;
+      window.location.href = whatsappUrl;
     }, 2000);
   };
 
@@ -187,8 +195,11 @@ export default function Home() {
                   <img
                     src={product.image}
                     alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 cursor-pointer"
-                    onClick={() => setSelectedImage(product.image)}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedImage(product.image);
+                    }}
                   />
 
                   {/* Overlay on hover */}
@@ -200,7 +211,10 @@ export default function Home() {
                       + Adicionar
                     </button>
                     <button
-                      onClick={() => setSelectedImage(product.image)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedImage(product.image);
+                      }}
                       className="px-3 py-2 bg-[#ffd700]/20 text-[#ffd700] rounded-lg font-black text-xs hover:bg-[#ffd700]/30 transition-colors flex items-center gap-1"
                     >
                       <ZoomIn size={14} />
