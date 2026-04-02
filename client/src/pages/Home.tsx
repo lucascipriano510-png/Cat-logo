@@ -137,9 +137,9 @@ export default function Home() {
   };
 
   const handleCheckout = async () => {
-    // Build message with cart items including SKU
+    // Build message with cart items including SKU and image links
     const itemsList = cartItems
-      .map(item => `📦 ${item.name}%0A   SKU: ${item.sku}%0A   Quantidade: ${item.quantity}%0A   Preço: R$ ${(item.price * item.quantity).toFixed(2)}`)
+      .map(item => `📦 ${item.name}%0A   SKU: ${item.sku}%0A   Quantidade: ${item.quantity}%0A   Preço: R$ ${(item.price * item.quantity).toFixed(2)}%0A   👉 Foto: ${item.image}`)
       .join('%0A%0A');
     
     const message = `Olá! Gostaria de receber os seguintes looks:%0A%0A${itemsList}%0A%0ATotal: R$ ${cartTotal.toFixed(2)}%0A%0A* Vou pagar só o que ficar`;
