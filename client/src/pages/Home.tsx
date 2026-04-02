@@ -65,10 +65,10 @@ const PRODUCTS = [
   },
   {
     id: 9,
-    name: 'Tênis Preto',
-    price: 199.90,
-    image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/piece-tenis-preto-oNKUUZeeRsEaaQedi2YbQA.webp',
-    category: 'Sapatos',
+    name: 'Jordan Red & Black',
+    price: 299.90,
+    image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/tenis-jordan-red-black-3d-L2SMFicX44iaFSqoe8AChG.webp',
+    category: 'Sapatos Premium',
   },
   {
     id: 10,
