@@ -1,487 +1,340 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { MessageCircle, Sparkles, ArrowDown, Zap } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ShoppingBag, MapPin, Clock, X, CheckCircle2, ArrowRight } from 'lucide-react';
 
 const WHATSAPP_URL = 'https://wa.me/5534984148067?text=Quero%20receber%202%20looks%20em%20casa';
 
+// Product catalog data
+const PRODUCTS = [
+  {
+    id: 1,
+    name: 'Camiseta Branca',
+    price: 89.90,
+    image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/piece-camiseta-branca-BVFQwW3N3sGJ72UCoekda8.webp',
+    category: 'Camisetas',
+  },
+  {
+    id: 2,
+    name: 'Jaqueta Preta Premium',
+    price: 349.90,
+    image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/piece-jaqueta-preta-fVmQxyi8x3p3YLbfTAYwtX.webp',
+    category: 'Jaquetas',
+  },
+  {
+    id: 3,
+    name: 'Calça Azul Denim',
+    price: 159.90,
+    image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/piece-calca-azul-TN2WZUb5DJkS99tQwhKvRM.webp',
+    category: 'Calças',
+  },
+  {
+    id: 4,
+    name: 'Hoodie Cinza',
+    price: 129.90,
+    image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/piece-hoodie-cinza-PKeUxy8D8U5Nmbx9FTNXBX.webp',
+    category: 'Hoodies',
+  },
+  {
+    id: 5,
+    name: 'Sapato Branco',
+    price: 249.90,
+    image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/piece-sapato-branco-2mjJdTTJ3cyMB8PcThkGku.webp',
+    category: 'Sapatos',
+  },
+  {
+    id: 6,
+    name: 'Camisa Preta',
+    price: 119.90,
+    image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/piece-camisa-preta-4GSjr3gTRhVZqAhabcbfZb.webp',
+    category: 'Camisas',
+  },
+  {
+    id: 7,
+    name: 'Calça Cinza Chino',
+    price: 139.90,
+    image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/piece-calca-cinza-LrDVdotSfaLHWeTCMQmQ7e.webp',
+    category: 'Calças',
+  },
+  {
+    id: 8,
+    name: 'Jaqueta Bomber',
+    price: 279.90,
+    image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/piece-jaqueta-bomber-cNvhZ4maLoPeuhCXdRph5Z.webp',
+    category: 'Jaquetas',
+  },
+  {
+    id: 9,
+    name: 'Tênis Preto',
+    price: 199.90,
+    image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/piece-tenis-preto-oNKUUZeeRsEaaQedi2YbQA.webp',
+    category: 'Sapatos',
+  },
+  {
+    id: 10,
+    name: 'Camiseta Preta Gráfica',
+    price: 99.90,
+    image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/piece-camiseta-preta-5jtJECURYZWmZQUYAwEKCs.webp',
+    category: 'Camisetas',
+  },
+];
+
 export default function Home() {
-  const [scrollY, setScrollY] = useState(0);
-  const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [cart, setCart] = useState<number[]>([]);
+  const [showCart, setShowCart] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
+  const cartItems = PRODUCTS.filter((p) => cart.includes(p.id));
+  const cartTotal = cartItems.reduce((sum, p) => sum + p.price, 0);
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const handleAddToCart = (productId: number) => {
+    setCart([...cart, productId]);
+  };
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setVisibleSections((prev) => new Set(prev).add(entry.target.id));
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
+  const handleRemoveFromCart = (productId: number) => {
+    const index = cart.indexOf(productId);
+    if (index > -1) {
+      setCart(cart.filter((_, i) => i !== index));
+    }
+  };
 
-    document.querySelectorAll('[data-section]').forEach((el) => {
-      observer.observe(el);
-    });
-
-    return () => observer.disconnect();
-  }, []);
+  const handleCheckout = () => {
+    setShowSuccess(true);
+    setTimeout(() => {
+      window.location.href = WHATSAPP_URL;
+    }, 2000);
+  };
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-[#0a0a0a] text-white overflow-hidden">
-      {/* FLOATING CTA - ALWAYS PRESENT */}
-      <a
-        href={WHATSAPP_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50 group"
-        style={{
-          transform: `translateY(${scrollY * 0.1}px)`,
-        }}
-      >
-        <div className="relative">
-          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#ff6b00] to-[#ffd700] opacity-75 blur-2xl animate-pulse"></div>
-          <button className="relative w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-[#ff6b00] to-[#ff8c00] rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform duration-300 border-2 border-[#ffd700]">
-            <MessageCircle size={24} className="text-[#0a0a0a]" />
-          </button>
-        </div>
-      </a>
-
-      {/* ============ SECTION 1: IMMERSIVE HERO ============ */}
-      <section
-        id="hero"
-        data-section="hero"
-        className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20"
-      >
-        {/* Background with parallax effect */}
-        <div
-          className="absolute inset-0 z-0"
-          style={{
-            backgroundImage: 'url(https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/hero-immersive-cinematic-9HpPNg4fdyT83bdqs2jCqj.webp)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            transform: `translateY(${scrollY * 0.5}px)`,
-            opacity: 0.7,
-          }}
-        />
-
-        {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/20 via-[#0a0a0a]/50 to-[#0a0a0a] z-10" />
-
-        {/* Content */}
-        <div className="container relative z-20 text-center space-y-8 max-w-4xl">
-          {/* Badge */}
-          <div
-            className="inline-block"
-            style={{
-              opacity: 1 - scrollY / 500,
-              transform: `translateY(${scrollY * 0.3}px)`,
-            }}
-          >
-            <div className="px-4 py-2 rounded-full border border-[#ff6b00] bg-[#ff6b00]/10 backdrop-blur-sm inline-block">
-              <span className="text-xs font-black text-[#ffd700] tracking-widest">NOVA TECNOLOGIA</span>
+    <div className="min-h-screen bg-[#0a0a0a] text-white pb-32">
+      {/* HEADER */}
+      <header className="sticky top-0 z-40 bg-[#0a0a0a]/95 backdrop-blur-sm border-b border-[#ff6b00]/20 py-4">
+        <div className="container flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-black text-[#ffd700]">Fluxo</h1>
+            <p className="text-xs text-gray-400">Moda em 2 horas</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 text-sm">
+              <MapPin size={16} className="text-[#ff6b00]" />
+              <span>Uberaba</span>
             </div>
-          </div>
-
-          {/* Main Headline - AGGRESSIVE */}
-          <div
-            style={{
-              transform: `translateY(${scrollY * 0.2}px) scale(${1 - scrollY / 1000})`,
-            }}
-          >
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-none tracking-tighter mb-6">
-              <span className="block">Seu look</span>
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b00] via-[#ffd700] to-[#ff6b00] animate-pulse">
-                em 2 horas
-              </span>
-              <span className="block">em casa</span>
-            </h1>
-          </div>
-
-          {/* Subheadline */}
-          <p className="text-lg md:text-2xl text-gray-300 font-light max-w-2xl mx-auto leading-relaxed">
-            Sem escolher. Sem sair. <span className="text-[#ffd700] font-bold">Prove e pague só o que ficar.</span>
-          </p>
-
-          {/* CTA - MEGA BUTTON */}
-          <div className="pt-8 flex flex-col items-center gap-6">
-            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-              <button className="relative px-6 sm:px-8 md:px-12 py-3 sm:py-4 md:py-6 bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] rounded-lg font-black text-base sm:text-lg md:text-2xl text-[#0a0a0a] shadow-2xl hover:shadow-[0_0_40px_#ff6b00] transition-all duration-300 border-2 border-[#ffd700] overflow-hidden hover:scale-105 active:scale-95">
-                <span className="relative z-10 flex items-center justify-center gap-2 sm:gap-3">
-                  <Sparkles size={20} className="sm:w-6 sm:h-6 md:w-7 md:h-7" />
-                  <span className="text-sm sm:text-base md:text-lg">QUERO RECEBER AGORA</span>
+            <button
+              onClick={() => setShowCart(!showCart)}
+              className="relative p-2 hover:bg-[#ff6b00]/10 rounded-lg transition-colors"
+            >
+              <ShoppingBag size={24} />
+              {cart.length > 0 && (
+                <span className="absolute top-0 right-0 w-5 h-5 bg-[#ff6b00] rounded-full flex items-center justify-center text-xs font-black">
+                  {cart.length}
                 </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-[#ffd700] to-[#ff6b00] opacity-0 hover:opacity-20 transition-opacity duration-300" />
-              </button>
-            </a>
-
-            {/* Scroll indicator */}
-            <div className="animate-bounce pt-4">
-              <ArrowDown size={24} className="text-[#ffd700]" />
-            </div>
+              )}
+            </button>
           </div>
+        </div>
+      </header>
+
+      {/* HERO MINI */}
+      <section className="py-8 bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a]">
+        <div className="container text-center">
+          <h2 className="text-3xl md:text-4xl font-black mb-2">
+            Escolha. <span className="text-[#ff6b00]">Receba.</span> Pague.
+          </h2>
+          <p className="text-gray-400">Selecione as peças que você ama e receba em até 2 horas</p>
         </div>
       </section>
 
-      {/* ============ SECTION 2: DESIRE SHOWCASE ============ */}
-      <section
-        id="desire"
-        data-section="desire"
-        className="relative min-h-screen flex items-center justify-center py-20 overflow-hidden"
-        style={{
-          background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%)',
-        }}
-      >
-        <div
-          className="absolute inset-0 opacity-30"
-          style={{
-            backgroundImage: 'url(https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/section-desire-showcase-ZQ9i7VPqVragXjdUFfBWwY.webp)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            transform: `translateY(${(scrollY - 1000) * 0.3}px)`,
-          }}
-        />
-
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a0a0a]/50 to-[#0a0a0a]" />
-
-        <div className="container relative z-10 text-center space-y-12">
-          {/* Section Title */}
-          <div
-            className={`transition-all duration-1000 ${
-              visibleSections.has('desire')
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-10'
-            }`}
-          >
-            <h2 className="text-4xl md:text-6xl font-black mb-4">
-              Três Vibes,{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b00] to-[#ffd700]">
-                Infinitas Possibilidades
-              </span>
-            </h2>
-            <p className="text-gray-400 text-lg">Escolha o estilo que mais combina com você</p>
-          </div>
-
-          {/* Outfit Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                title: 'Modo Urbano',
-                desc: 'Tech, moderno, pronto para a rua',
-                icon: '⚡',
-              },
-              {
-                title: 'Modo Essencial',
-                desc: 'Versátil, clássico, sempre funciona',
-                icon: '✨',
-              },
-              {
-                title: 'Modo Premium',
-                desc: 'Elegante, sofisticado, impacto garantido',
-                icon: '👑',
-              },
-            ].map((outfit, idx) => (
+      {/* PRODUCTS GRID */}
+      <section className="py-12">
+        <div className="container">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
+            {PRODUCTS.map((product, idx) => (
               <div
-                key={idx}
-                className={`group relative transition-all duration-1000 ${
-                  visibleSections.has('desire')
-                    ? 'opacity-100 translate-y-0'
-                    : 'opacity-0 translate-y-10'
-                }`}
+                key={product.id}
+                className="group cursor-pointer animate-fade-in-up"
                 style={{
-                  transitionDelay: `${idx * 200}ms`,
+                  animationDelay: `${idx * 50}ms`,
                 }}
               >
-                <div className="relative h-96 rounded-lg overflow-hidden border-2 border-[#ff6b00]/30 group-hover:border-[#ff6b00] transition-colors duration-300">
-                  {/* Glow effect on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#ff6b00]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="relative mb-3 overflow-hidden rounded-lg bg-[#1a1a1a] aspect-square">
+                  {/* Image */}
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
 
-                  {/* Content */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-gradient-to-b from-transparent to-[#0a0a0a]">
-                    <div className="text-5xl mb-4">{outfit.icon}</div>
-                    <h3 className="text-2xl font-black mb-2">{outfit.title}</h3>
-                    <p className="text-gray-400 text-sm">{outfit.desc}</p>
+                  {/* Overlay on hover */}
+                  <div className="absolute inset-0 bg-[#0a0a0a]/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <button
+                      onClick={() => handleAddToCart(product.id)}
+                      className="px-4 py-2 bg-[#ff6b00] text-[#0a0a0a] rounded-lg font-black text-sm hover:bg-[#ffd700] transition-colors"
+                    >
+                      + Adicionar
+                    </button>
+                  </div>
+
+                  {/* Price badge */}
+                  <div className="absolute top-1 right-1 sm:top-2 sm:right-2 bg-[#ff6b00] text-[#0a0a0a] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs font-black">
+                    R$ {product.price.toFixed(2)}
                   </div>
                 </div>
+
+                {/* Product info */}
+                <h3 className="font-black text-xs sm:text-sm line-clamp-2">{product.name}</h3>
+                <p className="text-xs text-gray-400 line-clamp-1">{product.category}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ============ SECTION 3: SPEED & URGENCY ============ */}
-      <section
-        id="speed"
-        data-section="speed"
-        className="relative min-h-screen flex items-center justify-center py-20"
-        style={{
-          background: 'linear-gradient(to bottom, #0a0a0a, #1a1a1a)',
-        }}
-      >
-        <div
-          className="absolute inset-0 opacity-40"
-          style={{
-            backgroundImage: 'url(https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/section-speed-delivery-ZMosNv4tQRopfZG2n4yXBs.webp)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            transform: `translateY(${(scrollY - 2000) * 0.2}px)`,
-          }}
-        />
+      {/* FLOATING CART BUTTON */}
+      {cart.length > 0 && !showCart && (
+        <button
+          onClick={() => setShowCart(true)}
+          className="fixed bottom-8 right-8 px-6 py-3 bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] rounded-full font-black text-[#0a0a0a] shadow-2xl hover:shadow-[0_0_40px_#ff6b00] transition-all duration-300 border-2 border-[#ffd700] flex items-center gap-3 animate-bounce"
+        >
+          <ShoppingBag size={20} />
+          <span>{cart.length} itens</span>
+          <ArrowRight size={16} />
+        </button>
+      )}
 
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a]" />
-
-        <div className="container relative z-10 text-center space-y-12">
-          <div
-            className={`transition-all duration-1000 ${
-              visibleSections.has('speed')
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-10'
-            }`}
-          >
-            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-[#ffd700] bg-[#ffd700]/10 mb-6">
-              <Zap size={20} className="text-[#ffd700]" />
-              <span className="font-black text-[#ffd700]">VELOCIDADE EXTREMA</span>
-            </div>
-
-            <h2 className="text-4xl md:text-6xl font-black mb-6">
-              Entrega em{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b00] to-[#ffd700]">
-                até 2 horas
-              </span>
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-              {[
-                { number: '1', label: 'Você escolhe', desc: 'Seu estilo em segundos' },
-                { number: '2', label: 'Preparamos', desc: 'Looks prontos para você' },
-                { number: '3', label: 'Recebe', desc: 'Na sua porta em até 2h' },
-              ].map((step, idx) => (
-                <div
-                  key={idx}
-                  className={`transition-all duration-1000 ${
-                    visibleSections.has('speed')
-                      ? 'opacity-100 translate-y-0'
-                      : 'opacity-0 translate-y-10'
-                  }`}
-                  style={{
-                    transitionDelay: `${idx * 150}ms`,
-                  }}
-                >
-                  <div className="p-6 rounded-lg border border-[#ff6b00]/20 hover:border-[#ff6b00] transition-colors duration-300 bg-[#0a0a0a]/50 backdrop-blur-sm">
-                    <div className="text-5xl font-black text-[#ff6b00] mb-3">{step.number}</div>
-                    <h3 className="font-black text-lg mb-2">{step.label}</h3>
-                    <p className="text-gray-400 text-sm">{step.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============ SECTION 4: EXCLUSIVITY & SCARCITY ============ */}
-      <section
-        id="exclusivity"
-        data-section="exclusivity"
-        className="relative min-h-screen flex items-center justify-center py-20"
-      >
-        <div
-          className="absolute inset-0 opacity-50"
-          style={{
-            backgroundImage: 'url(https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/section-exclusivity-9zbjdnb3rY7SbqsoL8KKtJ.webp)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            transform: `translateY(${(scrollY - 3000) * 0.25}px)`,
-          }}
-        />
-
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/70 to-[#0a0a0a]" />
-
-        <div className="container relative z-10 text-center space-y-12">
-          <div
-            className={`transition-all duration-1000 ${
-              visibleSections.has('exclusivity')
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-10'
-            }`}
-          >
-            <div className="inline-block px-6 py-3 rounded-lg border-2 border-[#ff6b00] bg-[#ff6b00]/10 mb-6">
-              <span className="font-black text-[#ff6b00] text-lg">⚠️ ATENÇÃO</span>
-            </div>
-
-            <h2 className="text-4xl md:text-6xl font-black mb-6">
-              Vagas Limitadas{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ffd700] to-[#ff6b00]">
-                Hoje
-              </span>
-            </h2>
-
-            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-              Apenas <span className="font-black text-[#ff6b00]">5 slots</span> disponíveis para entrega hoje. Após isso, próxima disponibilidade é amanhã.
-            </p>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-              {['100+', '98%', '2h', '1k+'].map((stat, idx) => (
-                <div
-                  key={idx}
-                  className={`p-4 rounded-lg border border-[#ff6b00]/30 bg-[#0a0a0a]/50 backdrop-blur-sm transition-all duration-1000 ${
-                    visibleSections.has('exclusivity')
-                      ? 'opacity-100 translate-y-0'
-                      : 'opacity-0 translate-y-10'
-                  }`}
-                  style={{
-                    transitionDelay: `${idx * 100}ms`,
-                  }}
-                >
-                  <div className="text-3xl font-black text-[#ff6b00]">{stat}</div>
-                  <div className="text-xs text-gray-400 mt-2">
-                    {['Clientes', 'Satisfação', 'Entrega', 'Looks'][idx]}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* CTA */}
-            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-              <button className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] rounded-lg font-black text-base sm:text-lg text-[#0a0a0a] shadow-2xl hover:shadow-[0_0_40px_#ff6b00] transition-all duration-300 border-2 border-[#ffd700] hover:scale-105 active:scale-95">
-                GARANTIR VAGA AGORA
+      {/* CART MODAL */}
+      {showCart && (
+        <div className="fixed inset-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-sm flex items-end md:items-center justify-center p-4">
+          <div className="bg-[#1a1a1a] rounded-t-2xl md:rounded-2xl w-full md:max-w-md max-h-[90vh] overflow-y-auto border border-[#ff6b00]/20">
+            {/* Header */}
+            <div className="sticky top-0 flex items-center justify-between p-6 border-b border-[#ff6b00]/20 bg-[#0a0a0a]">
+              <h3 className="text-xl font-black">Seu Carrinho</h3>
+              <button
+                onClick={() => setShowCart(false)}
+                className="p-2 hover:bg-[#ff6b00]/10 rounded-lg transition-colors"
+              >
+                <X size={24} />
               </button>
-            </a>
+            </div>
+
+            {/* Items */}
+            <div className="p-6 space-y-4">
+              {cartItems.length === 0 ? (
+                <p className="text-center text-gray-400 py-8">Seu carrinho está vazio</p>
+              ) : (
+                cartItems.map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 bg-[#0a0a0a] rounded-lg border border-[#ff6b00]/10">
+                    <div>
+                      <p className="font-black text-sm">{item.name}</p>
+                      <p className="text-[#ff6b00] font-black">R$ {item.price.toFixed(2)}</p>
+                    </div>
+                    <button
+                      onClick={() => handleRemoveFromCart(item.id)}
+                      className="p-2 hover:bg-red-500/20 rounded-lg transition-colors text-red-400"
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Total */}
+            {cartItems.length > 0 && (
+              <div className="sticky bottom-0 p-6 border-t border-[#ff6b00]/20 bg-[#0a0a0a] space-y-4">
+                <div className="flex items-center justify-between text-lg font-black">
+                  <span>Total:</span>
+                  <span className="text-[#ff6b00]">R$ {cartTotal.toFixed(2)}</span>
+                </div>
+                <p className="text-xs text-gray-400 text-center">* Você paga só o que ficar</p>
+                <button
+                  onClick={() => {
+                    setShowCart(false);
+                    setShowCheckout(true);
+                  }}
+                  className="w-full py-3 bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] rounded-lg font-black text-[#0a0a0a] hover:shadow-[0_0_40px_#ff6b00] transition-all duration-300"
+                >
+                  Continuar
+                </button>
+              </div>
+            )}
           </div>
         </div>
-      </section>
+      )}
 
-      {/* ============ SECTION 5: EXPERIENCE ============ */}
-      <section
-        id="experience"
-        data-section="experience"
-        className="relative min-h-screen flex items-center justify-center py-20"
-        style={{
-          background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%)',
-        }}
-      >
-        <div
-          className="absolute inset-0 opacity-40"
-          style={{
-            backgroundImage: 'url(https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/section-experience-W8MJ8a3pGvTjrPjbdKnMYp.webp)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            transform: `translateY(${(scrollY - 4000) * 0.2}px)`,
-          }}
-        />
+      {/* CHECKOUT MODAL */}
+      {showCheckout && (
+        <div className="fixed inset-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#1a1a1a] rounded-2xl w-full max-w-md border border-[#ff6b00]/20 p-8 space-y-6">
+            {/* Header */}
+            <div className="text-center">
+              <h3 className="text-2xl font-black mb-2">Confirmar Entrega</h3>
+              <p className="text-gray-400">Últimas informações antes de enviar</p>
+            </div>
 
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a]" />
+            {/* Info */}
+            <div className="space-y-4">
+              <div className="p-4 bg-[#0a0a0a] rounded-lg border border-[#ff6b00]/20">
+                <p className="text-xs text-gray-400 mb-1">Localização</p>
+                <p className="font-black flex items-center gap-2">
+                  <MapPin size={16} className="text-[#ff6b00]" />
+                  Uberaba
+                </p>
+              </div>
 
-        <div className="container relative z-10 text-center space-y-12">
-          <div
-            className={`transition-all duration-1000 ${
-              visibleSections.has('experience')
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-10'
-            }`}
-          >
-            <h2 className="text-4xl md:text-6xl font-black mb-6">
-              Experiência{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b00] to-[#ffd700]">
-                Premium
-              </span>
-            </h2>
+              <div className="p-4 bg-[#0a0a0a] rounded-lg border border-[#ff6b00]/20">
+                <p className="text-xs text-gray-400 mb-1">Tempo de entrega</p>
+                <p className="font-black flex items-center gap-2">
+                  <Clock size={16} className="text-[#ff6b00]" />
+                  Até 2 horas
+                </p>
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-              {[
-                { icon: '✓', title: 'Você só paga pelo que ficar', desc: 'Sem risco, sem compromisso' },
-                { icon: '🚚', title: 'Devolução fácil e rápida', desc: 'Sem burocracias' },
-                { icon: '💎', title: 'Roupas de qualidade premium', desc: 'Marcas selecionadas' },
-                { icon: '⚡', title: 'Resposta em menos de 5 min', desc: 'Atendimento imediato' },
-              ].map((item, idx) => (
-                <div
-                  key={idx}
-                  className={`p-8 rounded-lg border border-[#ff6b00]/30 hover:border-[#ff6b00] transition-all duration-300 bg-[#0a0a0a]/50 backdrop-blur-sm transform hover:scale-105 transition-transform ${
-                    visibleSections.has('experience')
-                      ? 'opacity-100 translate-y-0'
-                      : 'opacity-0 translate-y-10'
-                  }`}
-                  style={{
-                    transitionDelay: `${idx * 150}ms`,
-                  }}
-                >
-                  <div className="text-4xl mb-4">{item.icon}</div>
-                  <h3 className="font-black text-lg mb-2">{item.title}</h3>
-                  <p className="text-gray-400 text-sm">{item.desc}</p>
-                </div>
-              ))}
+              <div className="p-4 bg-[#0a0a0a] rounded-lg border border-[#ff6b00]/20">
+                <p className="text-xs text-gray-400 mb-1">Total de itens</p>
+                <p className="font-black">{cartItems.length} peças selecionadas</p>
+              </div>
+
+              <div className="p-4 bg-[#0a0a0a] rounded-lg border border-[#ff6b00]/20">
+                <p className="text-xs text-gray-400 mb-1">Valor total</p>
+                <p className="font-black text-[#ff6b00] text-lg">R$ {cartTotal.toFixed(2)}</p>
+                <p className="text-xs text-gray-400 mt-2">* Você paga só o que ficar</p>
+              </div>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowCheckout(false)}
+                className="flex-1 py-3 bg-[#0a0a0a] rounded-lg font-black border border-[#ff6b00]/20 hover:border-[#ff6b00] transition-colors"
+              >
+                Voltar
+              </button>
+              <button
+                onClick={handleCheckout}
+                className="flex-1 py-3 bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] rounded-lg font-black text-[#0a0a0a] hover:shadow-[0_0_40px_#ff6b00] transition-all duration-300"
+              >
+                Enviar via WhatsApp
+              </button>
             </div>
           </div>
         </div>
-      </section>
+      )}
 
-      {/* ============ SECTION 6: FINAL CTA ============ */}
-      <section
-        id="final-cta"
-        data-section="final-cta"
-        className="relative min-h-screen flex items-center justify-center py-20 overflow-hidden"
-      >
-        {/* Animated background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a]" />
-
-        {/* Glow effect */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#ff6b00] rounded-full opacity-10 blur-3xl" />
-
-        <div className="container relative z-10 text-center space-y-12 max-w-3xl">
-          <div
-            className={`transition-all duration-1000 ${
-              visibleSections.has('final-cta')
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-10'
-            }`}
-          >
-            <h2 className="text-4xl md:text-6xl lg:text-7xl font-black mb-8">
-              Seu Look Perfeito{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b00] to-[#ffd700]">
-                Está Aqui
-              </span>
-            </h2>
-
-            <p className="text-lg md:text-2xl text-gray-300 mb-12">
-              Não pense mais. Não escolha mais. Deixe a gente fazer.
-            </p>
-
-            {/* Final CTA Button */}
-            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-              <button className="px-6 sm:px-10 md:px-12 py-4 sm:py-5 md:py-6 bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] rounded-lg font-black text-base sm:text-xl md:text-2xl text-[#0a0a0a] shadow-2xl hover:shadow-[0_0_60px_#ff6b00] transition-all duration-300 border-2 border-[#ffd700] overflow-hidden hover:scale-105 active:scale-95">
-                <span className="relative z-10 flex items-center justify-center gap-2 sm:gap-3">
-                  <MessageCircle size={24} className="sm:w-7 sm:h-7 md:w-8 md:h-8" />
-                  <span className="text-sm sm:text-base md:text-lg">ATIVAR ENTREGA AGORA</span>
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-[#ffd700] to-[#ff6b00] opacity-0 hover:opacity-30 transition-opacity duration-300" />
-              </button>
-            </a>
-
-            <p className="text-sm text-gray-400 pt-6">
-              ⚡ Responderemos em menos de 5 minutos • Sem compromisso
-            </p>
+      {/* SUCCESS MODAL */}
+      {showSuccess && (
+        <div className="fixed inset-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-[#1a1a1a] rounded-2xl w-full max-w-md border border-[#ffd700]/20 p-8 text-center space-y-6">
+            <div className="flex justify-center">
+              <CheckCircle2 size={64} className="text-[#ffd700] animate-scale-pulse" />
+            </div>
+            <div>
+              <h3 className="text-2xl font-black mb-2">Perfeito!</h3>
+              <p className="text-gray-400">Abrindo WhatsApp para confirmar seu pedido...</p>
+            </div>
           </div>
         </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="relative z-10 py-12 border-t border-[#ff6b00]/20 bg-[#0a0a0a]">
-        <div className="container text-center text-gray-500 text-sm">
-          <p>© 2026 Fluxo Outlet. Entrega em Uberaba.</p>
-          <p className="mt-2">WhatsApp: 5534984148067</p>
-        </div>
-      </footer>
+      )}
     </div>
   );
 }
