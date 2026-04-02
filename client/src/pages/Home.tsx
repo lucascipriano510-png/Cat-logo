@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ShoppingBag, MapPin, Clock, X, CheckCircle2, ArrowRight } from 'lucide-react';
+import { ShoppingBag, MapPin, Clock, X, CheckCircle2, ArrowRight, ZoomIn } from 'lucide-react';
 
 const WHATSAPP_URL = 'https://wa.me/5534984148067?text=Quero%20receber%202%20looks%20em%20casa';
 
@@ -79,24 +79,49 @@ const PRODUCTS = [
   },
 ];
 
+interface CartItem {
+  id: number;
+  quantity: number;
+}
+
 export default function Home() {
-  const [cart, setCart] = useState<number[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const cartItems = PRODUCTS.filter((p) => cart.includes(p.id));
-  const cartTotal = cartItems.reduce((sum, p) => sum + p.price, 0);
+  // Calculate cart totals
+  const cartItems = cart
+    .map(item => {
+      const product = PRODUCTS.find(p => p.id === item.id);
+      return product ? { ...product, quantity: item.quantity } : null;
+    })
+    .filter((item): item is any => item !== null);
+
+  const cartTotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const handleAddToCart = (productId: number) => {
-    setCart([...cart, productId]);
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item.id === productId);
+      if (existingItem) {
+        return prevCart.map(item =>
+          item.id === productId ? { ...item, quantity: item.quantity + 1 } : item
+        );
+      }
+      return [...prevCart, { id: productId, quantity: 1 }];
+    });
   };
 
   const handleRemoveFromCart = (productId: number) => {
-    const index = cart.indexOf(productId);
-    if (index > -1) {
-      setCart(cart.filter((_, i) => i !== index));
-    }
+    setCart(prevCart =>
+      prevCart
+        .map(item =>
+          item.id === productId ? { ...item, quantity: item.quantity - 1 } : item
+        )
+        .filter(item => item.quantity > 0)
+    );
   };
 
   const handleCheckout = () => {
@@ -125,9 +150,9 @@ export default function Home() {
               className="relative p-2 hover:bg-[#ff6b00]/10 rounded-lg transition-colors"
             >
               <ShoppingBag size={24} />
-              {cart.length > 0 && (
+              {cartCount > 0 && (
                 <span className="absolute top-0 right-0 w-5 h-5 bg-[#ff6b00] rounded-full flex items-center justify-center text-xs font-black">
-                  {cart.length}
+                  {cartCount}
                 </span>
               )}
             </button>
@@ -152,26 +177,34 @@ export default function Home() {
             {PRODUCTS.map((product, idx) => (
               <div
                 key={product.id}
-                className="group cursor-pointer animate-fade-in-up"
+                className="cursor-pointer animate-fade-in-up"
                 style={{
                   animationDelay: `${idx * 50}ms`,
                 }}
               >
-                <div className="relative mb-3 overflow-hidden rounded-lg bg-[#1a1a1a] aspect-square">
+                <div className="relative mb-3 overflow-hidden rounded-lg bg-[#1a1a1a] aspect-square group">
                   {/* Image */}
                   <img
                     src={product.image}
                     alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 cursor-pointer"
+                    onClick={() => setSelectedImage(product.image)}
                   />
 
                   {/* Overlay on hover */}
-                  <div className="absolute inset-0 bg-[#0a0a0a]/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-[#0a0a0a]/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center gap-2">
                     <button
                       onClick={() => handleAddToCart(product.id)}
                       className="px-4 py-2 bg-[#ff6b00] text-[#0a0a0a] rounded-lg font-black text-sm hover:bg-[#ffd700] transition-colors"
                     >
                       + Adicionar
+                    </button>
+                    <button
+                      onClick={() => setSelectedImage(product.image)}
+                      className="px-3 py-2 bg-[#ffd700]/20 text-[#ffd700] rounded-lg font-black text-xs hover:bg-[#ffd700]/30 transition-colors flex items-center gap-1"
+                    >
+                      <ZoomIn size={14} />
+                      Ampliar
                     </button>
                   </div>
 
@@ -191,13 +224,13 @@ export default function Home() {
       </section>
 
       {/* FLOATING CART BUTTON */}
-      {cart.length > 0 && !showCart && (
+      {cartCount > 0 && !showCart && (
         <button
           onClick={() => setShowCart(true)}
           className="fixed bottom-8 right-8 px-6 py-3 bg-gradient-to-r from-[#ff6b00] to-[#ff8c00] rounded-full font-black text-[#0a0a0a] shadow-2xl hover:shadow-[0_0_40px_#ff6b00] transition-all duration-300 border-2 border-[#ffd700] flex items-center gap-3 animate-bounce"
         >
           <ShoppingBag size={20} />
-          <span>{cart.length} itens</span>
+          <span>{cartCount} itens</span>
           <ArrowRight size={16} />
         </button>
       )}
@@ -222,18 +255,32 @@ export default function Home() {
               {cartItems.length === 0 ? (
                 <p className="text-center text-gray-400 py-8">Seu carrinho está vazio</p>
               ) : (
-                cartItems.map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 bg-[#0a0a0a] rounded-lg border border-[#ff6b00]/10">
-                    <div>
+                cartItems.map((item: any) => (
+                  <div key={item.id} className="flex items-center justify-between p-3 bg-[#0a0a0a] rounded-lg border border-[#ff6b00]/10">
+                    <div className="flex-1">
                       <p className="font-black text-sm">{item.name}</p>
-                      <p className="text-[#ff6b00] font-black">R$ {item.price.toFixed(2)}</p>
+                      <p className="text-[#ff6b00] font-black text-xs">
+                        R$ {item.price.toFixed(2)} x {item.quantity}
+                      </p>
+                      <p className="text-gray-400 text-xs">
+                        Subtotal: R$ {(item.price * item.quantity).toFixed(2)}
+                      </p>
                     </div>
-                    <button
-                      onClick={() => handleRemoveFromCart(item.id)}
-                      className="p-2 hover:bg-red-500/20 rounded-lg transition-colors text-red-400"
-                    >
-                      <X size={18} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleRemoveFromCart(item.id)}
+                        className="p-1 hover:bg-red-500/20 rounded text-red-400 transition-colors"
+                      >
+                        −
+                      </button>
+                      <span className="w-6 text-center font-black">{item.quantity}</span>
+                      <button
+                        onClick={() => handleAddToCart(item.id)}
+                        className="p-1 hover:bg-[#ff6b00]/20 rounded text-[#ff6b00] transition-colors"
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
@@ -292,7 +339,7 @@ export default function Home() {
 
               <div className="p-4 bg-[#0a0a0a] rounded-lg border border-[#ff6b00]/20">
                 <p className="text-xs text-gray-400 mb-1">Total de itens</p>
-                <p className="font-black">{cartItems.length} peças selecionadas</p>
+                <p className="font-black">{cartCount} peças selecionadas</p>
               </div>
 
               <div className="p-4 bg-[#0a0a0a] rounded-lg border border-[#ff6b00]/20">
@@ -332,6 +379,31 @@ export default function Home() {
               <h3 className="text-2xl font-black mb-2">Perfeito!</h3>
               <p className="text-gray-400">Abrindo WhatsApp para confirmar seu pedido...</p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* IMAGE LIGHTBOX */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 z-50 bg-[#0a0a0a]/95 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div
+            className="relative max-w-2xl w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={selectedImage}
+              alt="Ampliar"
+              className="w-full h-auto rounded-lg"
+            />
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 right-4 p-2 bg-[#ff6b00] hover:bg-[#ffd700] rounded-lg transition-colors"
+            >
+              <X size={24} className="text-[#0a0a0a]" />
+            </button>
           </div>
         </div>
       )}
