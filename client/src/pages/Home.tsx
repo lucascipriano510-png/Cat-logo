@@ -23,9 +23,9 @@ const PRODUCTS = [
   },
   {
     id: 3,
-    name: 'Calça Azul Denim',
-    price: 159.90,
-    image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/piece-calca-azul-TN2WZUb5DJkS99tQwhKvRM.webp',
+    name: 'Calça Jogador',
+    price: 169.90,
+    image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/IMG_3456_1b4bd766.jpeg',
     category: 'Calças',
   },
   {
