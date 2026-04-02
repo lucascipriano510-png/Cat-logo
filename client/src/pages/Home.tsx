@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { ShoppingBag, MapPin, Clock, X, CheckCircle2, ArrowRight, ZoomIn } from 'lucide-react';
+import { trpc } from '@/lib/trpc';
 
 const WHATSAPP_URL = 'https://wa.me/5534984148067?text=Quero%20receber%202%20looks%20em%20casa';
 
@@ -100,6 +101,7 @@ export default function Home() {
   const [showCheckout, setShowCheckout] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const createOrderMutation = trpc.orders.create.useMutation();
 
   // Calculate cart totals
   const cartItems = cart
@@ -134,19 +136,40 @@ export default function Home() {
     );
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     // Build message with cart items including SKU
     const itemsList = cartItems
       .map(item => `📦 ${item.name}%0A   SKU: ${item.sku}%0A   Quantidade: ${item.quantity}%0A   Preço: R$ ${(item.price * item.quantity).toFixed(2)}`)
       .join('%0A%0A');
     
     const message = `Olá! Gostaria de receber os seguintes looks:%0A%0A${itemsList}%0A%0ATotal: R$ ${cartTotal.toFixed(2)}%0A%0A* Vou pagar só o que ficar`;
-    const whatsappUrl = `https://wa.me/5534984148067?text=${message}`;
     
-    setShowSuccess(true);
-    setTimeout(() => {
+    // Save order to database
+    try {
+      await createOrderMutation.mutateAsync({
+        whatsappPhone: '5534984148067',
+        items: cartItems.map(item => ({
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          sku: item.sku,
+          image: item.image,
+        })),
+        totalPrice: cartTotal,
+      });
+      
+      setShowSuccess(true);
+      setTimeout(() => {
+        const whatsappUrl = `https://wa.me/5534984148067?text=${message}`;
+        window.location.href = whatsappUrl;
+      }, 2000);
+    } catch (error) {
+      console.error('Erro ao criar pedido:', error);
+      // Redireciona para WhatsApp mesmo se houver erro
+      const whatsappUrl = `https://wa.me/5534984148067?text=${message}`;
       window.location.href = whatsappUrl;
-    }, 2000);
+    }
   };
 
   return (
