@@ -13,6 +13,7 @@ const PRODUCTS = [
     price: 89.90,
     image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/piece-camiseta-branca-BVFQwW3N3sGJ72UCoekda8.webp',
     category: 'Camisetas',
+    sku: 'CAM-BRA-001',
   },
   {
     id: 2,
@@ -20,6 +21,7 @@ const PRODUCTS = [
     price: 349.90,
     image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/piece-jaqueta-preta-fVmQxyi8x3p3YLbfTAYwtX.webp',
     category: 'Jaquetas',
+    sku: 'JAQ-PRT-001',
   },
   {
     id: 3,
@@ -27,6 +29,7 @@ const PRODUCTS = [
     price: 169.90,
     image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/IMG_3456_1b4bd766.jpeg',
     category: 'Calças',
+    sku: 'CAL-JOG-001',
   },
   {
     id: 4,
@@ -34,6 +37,7 @@ const PRODUCTS = [
     price: 129.90,
     image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/piece-hoodie-cinza-PKeUxy8D8U5Nmbx9FTNXBX.webp',
     category: 'Hoodies',
+    sku: 'HOO-CIN-001',
   },
   {
     id: 5,
@@ -41,6 +45,7 @@ const PRODUCTS = [
     price: 249.90,
     image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/piece-sapato-branco-2mjJdTTJ3cyMB8PcThkGku.webp',
     category: 'Sapatos',
+    sku: 'SAP-BRA-001',
   },
   {
     id: 6,
@@ -48,6 +53,7 @@ const PRODUCTS = [
     price: 119.90,
     image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/piece-camisa-preta-4GSjr3gTRhVZqAhabcbfZb.webp',
     category: 'Camisas',
+    sku: 'CAM-PRT-001',
   },
   {
     id: 7,
@@ -55,6 +61,7 @@ const PRODUCTS = [
     price: 139.90,
     image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/piece-calca-cinza-LrDVdotSfaLHWeTCMQmQ7e.webp',
     category: 'Calças',
+    sku: 'CAL-CIN-001',
   },
   {
     id: 8,
@@ -62,6 +69,7 @@ const PRODUCTS = [
     price: 279.90,
     image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/piece-jaqueta-bomber-cNvhZ4maLoPeuhCXdRph5Z.webp',
     category: 'Jaquetas',
+    sku: 'JAQ-BOM-001',
   },
   {
     id: 9,
@@ -69,6 +77,7 @@ const PRODUCTS = [
     price: 299.90,
     image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/tenis-jordan-red-black-3d-L2SMFicX44iaFSqoe8AChG.webp',
     category: 'Sapatos Premium',
+    sku: 'TEN-JOR-001',
   },
   {
     id: 10,
@@ -76,6 +85,7 @@ const PRODUCTS = [
     price: 99.90,
     image: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504826005/PUHfFZeaeqgF3QvD5MkPbK/piece-camiseta-preta-5jtJECURYZWmZQUYAwEKCs.webp',
     category: 'Camisetas',
+    sku: 'CAM-GRA-001',
   },
 ];
 
@@ -125,10 +135,10 @@ export default function Home() {
   };
 
   const handleCheckout = () => {
-    // Build message with cart items
+    // Build message with cart items including SKU
     const itemsList = cartItems
-      .map(item => `${item.name} (x${item.quantity}) - R$ ${(item.price * item.quantity).toFixed(2)}`)
-      .join('%0A');
+      .map(item => `📦 ${item.name}%0A   SKU: ${item.sku}%0A   Quantidade: ${item.quantity}%0A   Preço: R$ ${(item.price * item.quantity).toFixed(2)}`)
+      .join('%0A%0A');
     
     const message = `Olá! Gostaria de receber os seguintes looks:%0A%0A${itemsList}%0A%0ATotal: R$ ${cartTotal.toFixed(2)}%0A%0A* Vou pagar só o que ficar`;
     const whatsappUrl = `https://wa.me/5534984148067?text=${message}`;
