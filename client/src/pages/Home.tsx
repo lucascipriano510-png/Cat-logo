@@ -191,7 +191,7 @@ export default function Home() {
                 }}
               >
                 <div className="relative mb-3 overflow-hidden rounded-lg bg-[#1a1a1a] aspect-square group">
-                  {/* Image */}
+                  {/* Image - toque abre lightbox */}
                   <img
                     src={product.image}
                     alt={product.name}
@@ -208,16 +208,21 @@ export default function Home() {
                     }}
                   />
 
-                  {/* Overlay on hover */}
-                  <div className="absolute inset-0 bg-[#0a0a0a]/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center gap-2">
+                  {/* Overlay on hover - desktop only */}
+                  <div className="absolute inset-0 bg-[#0a0a0a]/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:flex flex-col items-center justify-center gap-2">
                     <button
-                      onClick={() => handleAddToCart(product.id)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleAddToCart(product.id);
+                      }}
                       className="px-4 py-2 bg-[#ff6b00] text-[#0a0a0a] rounded-lg font-black text-sm hover:bg-[#ffd700] transition-colors"
                     >
                       + Adicionar
                     </button>
                     <button
                       onClick={(e) => {
+                        e.preventDefault();
                         e.stopPropagation();
                         setSelectedImage(product.image);
                       }}
@@ -234,9 +239,24 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Product info */}
-                <h3 className="font-black text-xs sm:text-sm line-clamp-2">{product.name}</h3>
-                <p className="text-xs text-gray-400 line-clamp-1">{product.category}</p>
+                {/* Product info + Mobile Add Button */}
+                <div className="space-y-2">
+                  <div>
+                    <h3 className="font-black text-xs sm:text-sm line-clamp-2">{product.name}</h3>
+                    <p className="text-xs text-gray-400 line-clamp-1">{product.category}</p>
+                  </div>
+                  {/* Add button for mobile */}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleAddToCart(product.id);
+                    }}
+                    className="w-full sm:hidden py-2 px-2 bg-[#ff6b00] text-[#0a0a0a] rounded-lg font-black text-xs hover:bg-[#ffd700] transition-colors"
+                  >
+                    + Adicionar
+                  </button>
+                </div>
               </div>
             ))}
           </div>
